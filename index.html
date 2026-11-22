@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>Ethanol AR Monitor</title>
+    <script src="https://aframe.io"></script>
+    <script src="https://jsdelivr.net"></script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      
+        <a-plane
+          color="#111827"
+          opacity="0.88"
+          position="0 0 0"
+          height="0.65"
+          width="1.1"
+        ></a-plane>
+
+        <a-text
+          id="sensor-text"
+          value="Loading..."
+          color="#10B981"
+          align="center"
+          position="0 0 0.01"
+          scale="0.45 0.45 0.45"
+        ></a-text>
+      
+    </a-scene>
+
+    <script>
+      const SCRIPT_URL = "https://google.com";
+      const textEl = document.querySelector('#sensor-text');
+
+      async function fetchSensorData() {
+        try {
+          const response = await fetch(SCRIPT_URL);
+          const data = await response.json();
+
+          const ppm = Number(data.ppm);
+          const temp = data.temp;
+          const hum = data.hum;
+
+          let statusColor = "#10B981";
+          let statusLabel = "";
+
+          if (ppm >= 1500) {
+            statusColor = "#EF4444";
+            statusLabel = " [ALARM!]";
+          } else if (ppm > 530) {
+            statusColor = "#F59E0B";
+            statusLabel = " [WARN]";
+          }
+
+          textEl.setAttribute('color', statusColor);
+          textEl.setAttribute(
+            'value',
+            `Ethanol: ${ppm} ppm${statusLabel}\nTemp: ${temp} C\nHumidity: ${hum}%`
+          );
+        } catch (error) {
+          console.error("Ошибка загрузки:", error);
+        }
+      }
+
+      fetchSensorData();
+      setInterval(fetchSensorData, 3000);
+    </script>
+  </body>
+</html>
